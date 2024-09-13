@@ -30,4 +30,15 @@ class PublicKeyForm(forms.Form):
   )
 
   def clean_public_key(self):
-    pass
+    public_key = self.cleaned_data.get('public_key')
+    try:
+      parsed_url = urllib.parse.urlparse(public_key)
+      query_params = urllib.parse.parse_qs(parsed_url.query)
+
+      # Извлечение значения public_key
+      if 'public_key' in query_params:
+        return query_params['public_key'][0]
+      else:
+        raise forms.ValidationError('Ссылка не содержит public_key')
+    except Exception as e:
+      raise forms.ValidationError(f'Ошибка обработки ссылки: {e}')
