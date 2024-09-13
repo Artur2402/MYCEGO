@@ -8,7 +8,8 @@ class PublicKeyForm(forms.Form):
     ('archive', 'Архивы'),
     ('document', 'Документы'),
     ('image', 'Изображения'),
-    ('media', 'Медиа файлы')
+    ('media', 'Медиа файлы'),
+    ('executable', "Исполняемые файлы")
   )
 
   public_key = forms.CharField(
@@ -29,6 +30,7 @@ class PublicKeyForm(forms.Form):
     help_text='Введите максимальное кол-во файлов для отображения. Оставьте пустым для отображения всех файлов'
   )
 
+# Функция извлечения public_key из ссылки.
   def clean_public_key(self):
     public_key = self.cleaned_data.get('public_key')
     try:
