@@ -1,5 +1,5 @@
 from django import forms
-import urllib.parse
+from urllib.parse import urlparse, parse_qs
 
 
 class PublicKeyForm(forms.Form):
@@ -32,15 +32,27 @@ class PublicKeyForm(forms.Form):
 
 # Функция извлечения public_key из ссылки.
   def clean_public_key(self):
-    public_key = self.cleaned_data.get('public_key')
-    try:
-      parsed_url = urllib.parse.urlparse(public_key)
-      query_params = urllib.parse.parse_qs(parsed_url.query)
+    url = self.cleaned_data['public_key']
 
-      # Извлечение значения public_key
-      if 'public_key' in query_params:
-        return query_params['public_key'][0]
+    # Логируем введенную ссылку
+    # print(f"Введенная ссылка: {url}")
+
+    try:
+      parsed_url = urlparse(url)
+
+      if "disk.yandex.ru" in parsed_url.netloc:
+        if '/d/' in parsed_url.path:
+          public_key = parsed_url.path.split('/d/')[-1]
+        elif '/public/' in parsed_url.path:
+          public_key = parsed_url.path.split('/public/')[-1]
+        else:
+          raise forms.ValidationError("Не удалось извлечь публичный ключ из ссылки.")
+
+        if public_key:
+          print(f"Извлеченный публичный ключ: {public_key}")
+          return public_key
       else:
-        raise forms.ValidationError('Ссылка не содержит public_key')
+        raise forms.ValidationError("Некорректный домен. Ссылка должна вести на Яндекс.Диск.")
+
     except Exception as e:
-      raise forms.ValidationError(f'Ошибка обработки ссылки: {e}')
+      raise forms.ValidationError(f"Ошибка обработки ссылки: {e}")
